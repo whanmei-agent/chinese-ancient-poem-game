@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古诗词学习与测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #f5efe2;
+            background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M10 10c0-5 5-10 10-10h60c5 0 10 5 10 10v80c0 5-5 10-10 10H20c-5 0-10-5-10-10V10z" fill="%23efe6d4" fill-opacity="0.4"/><path d="M20 20h60v60H20z" fill="none" stroke="%23dfd4c0" stroke-width="1.5"/></svg>');
+            background-size: 160px 160px;
+        }
+        
+        /* Input blanks with responsive styling */
+        .blank-input {
+            border-bottom: 3px solid #b25d38;
+            background: transparent;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            width: 3.2rem;
+            height: 3.2rem;
+            outline: none;
+            transition: all 0.3s ease;
+            color: #3e2723;
+        }
+        
+        .blank-input:focus {
+            border-bottom-color: #d32f2f;
+            background-color: rgba(211, 47, 47, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(184, 115, 51, 0.15);
+        }
+
+        .correct-animation {
+            animation: pulse-green 0.6s ease;
+        }
+        .wrong-animation {
+            animation: shake-red 0.6s ease;
+        }
+        
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background-color: #d1fae5; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake-red {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); background-color: #fee2e2; }
+            20%, 40%, 60%, 80% { transform: translateX(6px); background-color: #fee2e2; }
+        }
+
+        .title-calligraphy {
+            text-shadow: 2px 2px 4px rgba(62, 39, 35, 0.15);
+            color: #3e2723;
+        }
+
+        /* Elegant custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5efe2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c2b39a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8987d;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-3xl w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-amber-200/60 my-6">
+        
+        <!-- Header Section -->
+        <header class="bg-gradient-to-b from-amber-100 to-amber-50/40 p-6 text-center border-b border-amber-200/50 relative">
+            <h1 class="text-3xl md:text-4xl font-bold title-calligraphy mb-2 tracking-wide">古诗词学习与测试</h1>
+            <p class="text-amber-800 text-sm md:text-base italic">雅言传承文明，经典浸润人生</p>
+            
+            <!-- Quiz HUD Indicators -->
+            <div id="quiz-indicators" class="hidden">
+                <div class="absolute top-4 right-4 bg-amber-600 text-white px-4 py-1.5 rounded-full text-xs md:text-sm font-bold shadow-md">
+                    得分: <span id="score-display">0</span>
+                </div>
+                <div class="absolute top-4 left-4 bg-teal-600 text-white px-4 py-1.5 rounded-full text-xs md:text-sm font-bold shadow-md">
+                    第 <span id="question-number">1</span>/10 题
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="p-6 md:p-8">
+            
+            <div id="start-screen" class="text-center space-y-6 py-4">
+                <div class="flex justify-center mb-2">
+                    <span class="text-5xl">📖</span>
+                </div>
+                <p class="text-lg text-amber-900/80 leading-relaxed font-medium">
+                    欢迎来到古诗词空间！<br>
+                    建议先在“学习模式”中自由阅读、逐字朗读，<br>
+                    也可以开启有趣的“挖空练习”，最后去“小测试”大显身手。
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+                    <button id="enter-learn-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 px-8 rounded-full text-lg shadow-lg hover:shadow-emerald-700/20 transition-all duration-200">
+                        进入学习模式
+                    </button>
+                    <button id="start-quiz-btn" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-3.5 px-8 rounded-full text-lg shadow-lg hover:shadow-amber-700/20 transition-all duration-200">
+                        开始小测试
+                    </button>
+                </div>
+            </div>
+
+            <div id="learning-screen" class="hidden">
+                
+                <!-- Search & Selector Component -->
+                <div class="bg-emerald-50/60 p-5 rounded-2xl border border-emerald-100/80 shadow-inner mb-6">
+                    <label class="block text-emerald-950 font-bold mb-3 text-lg">请输入或选择想学习的古诗：</label>
+                    <div class="flex gap-2">
+                        <input list="poem-list" id="poem-input" class="w-full p-3 border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 text-base shadow-sm" placeholder="如：静夜思 或 李白">
+                        <datalist id="poem-list"></datalist>
+                        <button id="search-poem-btn" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-6 rounded-xl shadow transition-colors whitespace-nowrap">
+                            确定
+                        </button>
+                    </div>
+                    
+                    <!-- If poem not found, trigger this inline creation panel -->
+                    <div id="add-poem-panel" class="mt-4 p-4 bg-white rounded-xl border border-emerald-200 hidden shadow-sm space-y-3">
+                        <p class="text-red-600 font-bold text-sm">⚠️ 未在题库中找到该诗词，你可以把它录入我们不断更新的题库：</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="new-poem-title" placeholder="诗词名称（如：静夜思）" class="p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-emerald-500 outline-none">
+                            <input type="text" id="new-poem-author" placeholder="作者朝代（如：[唐] 李白）" class="p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <textarea id="new-poem-content" rows="3" placeholder="请输入诗词正文（请用逗号、句号等标点符号分隔诗句，如：床前明月光，疑是地上霜。举头望明月，低头思故乡。）" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-emerald-500 outline-none resize-none"></textarea>
+                        <div class="flex justify-end gap-2">
+                            <button id="cancel-add-btn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-semibold transition-colors">取消</button>
+                            <button id="save-new-poem-btn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition-colors">保存到题库</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="learning-content" class="text-center min-h-[280px] flex flex-col justify-center py-6 px-4 bg-amber-50/20 rounded-2xl border border-amber-200/30 shadow-sm relative overflow-hidden hidden">
+                    <h2 id="learn-title" class="text-4xl font-bold text-gray-900 mb-3 title-calligraphy"></h2>
+                    <p id="learn-author" class="text-lg text-amber-800/80 mb-6 font-medium"></p>
+                    
+                    <!-- Poetry body output -->
+                    <div id="learn-text" class="text-2xl md:text-3xl text-gray-800 leading-[3.5rem] md:leading-[4rem] space-y-3 font-semibold tracking-widest px-2">
+                    </div>
+                </div>
+
+                <!-- Control Buttons for Standard Read & Loop Read -->
+                <div id="learning-controls" class="mt-8 flex flex-wrap justify-center gap-3">
+                    <button id="read-aloud-btn" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-colors flex items-center gap-2">
+                        🔊 朗读
+                    </button>
+                    <button id="loop-read-btn" class="hidden bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-colors flex items-center gap-2">
+                        🔁 循环朗读
+                    </button>
+                    <button id="stop-read-btn" class="hidden bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-colors">
+                        ⏹ 停止
+                    </button>
+                    <button id="go-practice-btn" class="hidden bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-colors">
+                        🎯 挖空练习
+                    </button>
+                    <button id="back-from-learn-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-colors">
+                        返回主页
+                    </button>
+                </div>
+            </div>
+
+            <div id="practice-screen" class="hidden">
+                <div class="bg-orange-50/50 p-6 rounded-2xl border border-orange-100 mb-6 text-center">
+                    <h3 id="practice-title" class="text-2xl font-bold text-gray-800 mb-1 title-calligraphy"></h3>
+                    <p id="practice-author" class="text-sm text-gray-600 mb-6"></p>
+                    
+                    <!-- Practice interactive area -->
+                    <div id="practice-body" class="text-2xl md:text-3xl text-gray-800 leading-[4rem] space-y-4 font-semibold tracking-widest">
+                    </div>
+                </div>
+
+                <!-- Custom inline status banner for feedback -->
+                <div id="practice-feedback" class="hidden text-center py-3 px-6 rounded-xl font-bold mb-6"></div>
+
+                <div class="flex justify-center flex-wrap gap-4">
+                    <button id="show-original-btn" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-6 rounded-full shadow transition-colors">
+                        查看原文
+                    </button>
+                    <button id="retry-practice-btn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-6 rounded-full shadow transition-colors">
+                        再来一次
+                    </button>
+                    <button id="back-to-learn-from-practice-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2.5 px-6 rounded-full shadow transition-colors">
+                        返回学习页
+                    </button>
+                </div>
+            </div>
+
+            <div id="game-screen" class="hidden">
+                <!-- Progress Line indicator -->
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-6 shadow-inner">
+                    <div id="progress-bar" class="bg-teal-600 h-2 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+
+                <div id="question-container" class="bg-amber-50/50 p-6 rounded-2xl border border-amber-100 shadow-inner mb-6 min-h-[180px] flex flex-col justify-center">
+                    <div class="text-center mb-4">
+                        <h2 id="poem-title" class="text-xl font-bold text-amber-900/90 mb-1"></h2>
+                        <p id="poem-author" class="text-xs text-gray-500"></p>
+                    </div>
+                    
+                    <div id="question-text" class="text-xl md:text-2xl text-center text-gray-800 leading-loose font-medium">
+                    </div>
+                </div>
+
+                <!-- Dynamic inputs -->
+                <div id="answer-area" class="space-y-4">
+                    <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                    </div>
+                    
+                    <div id="fill-blank-container" class="hidden text-center space-y-4">
+                        <p class="text-sm text-gray-600">请输入缺少的汉字：</p>
+                        <div id="inputs-wrapper" class="flex justify-center gap-2 mb-4">
+                        </div>
+                        <button id="submit-blank-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-8 rounded-xl shadow transition-colors">
+                            提交答案
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Response result box -->
+                <div id="feedback-area" class="hidden mt-6 p-4 rounded-xl text-center font-bold text-lg">
+                </div>
+
+                <div class="mt-6 text-center">
+                     <button id="next-btn" class="hidden bg-amber-700 hover:bg-amber-800 text-white font-bold py-2.5 px-8 rounded-full shadow transition-colors">
+                        下一题
+                    </button>
+                </div>
+            </div>
+
+            <div id="result-screen" class="hidden text-center space-y-6 py-6">
+                <h2 class="text-3xl font-bold text-amber-900 title-calligraphy">测试结束！</h2>
+                <div class="text-7xl font-bold text-amber-600 my-4" id="final-score">0</div>
+                <p id="result-message" class="text-lg text-gray-700 px-4"></p>
+                <div class="pt-6 border-t border-amber-200/60 flex justify-center gap-4">
+                    <button id="restart-btn" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors">
+                        再测一次
+                    </button>
+                    <button id="back-from-result-btn" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors">
+                        返回主页
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Custom Dialog Modal (No browser alert) -->
+    <div id="custom-alert" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl m-4 transform scale-95 transition-transform duration-300">
+            <h3 id="alert-title" class="text-xl font-bold text-amber-900 mb-2">提示</h3>
+            <p id="alert-message" class="text-gray-700 mb-6 leading-relaxed"></p>
+            <div class="flex justify-end">
+                <button id="alert-ok-btn" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors text-sm">
+                    确认
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Core Dataset (Stored locally using localStorage) ---
+        const defaultPoems = [
+            {
+                title: "静夜思",
+                author: "[唐] 李白",
+                fullText: "床前明月光，疑是地上霜。举头望明月，低头思故乡。",
+                questions: [
+                    { type: 'fill', text: "床前明月光，疑是地上_{1}。", answer: "霜" },
+                    { type: 'choice', text: "举头望明月，____思故乡。", options: ["低头", "转头", "回头", "摇头"], answer: 0 }
+                ]
+            },
+            {
+                title: "春晓",
+                author: "[唐] 孟浩然",
+                fullText: "春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。",
+                questions: [
+                    { type: 'choice', text: "春眠不觉晓，处处闻啼____。", options: ["鸟", "了", "叫", "闹"], answer: 0 },
+                    { type: 'fill', text: "夜来风雨声，花落知多_{1}。", answer: "少" }
+                ]
+            },
+            {
+                title: "登鹳雀楼",
+                author: "[唐] 王之涣",
+                fullText: "白日依山尽，黄河入海流。欲穷千里目，更上一层楼。",
+                questions: [
+                    { type: 'fill', text: "白日依山尽，黄河入海_{1}。", answer: "流" },
+                    { type: 'choice', text: "欲穷千里目，更上____层楼。", options: ["一", "二", "三", "几"], answer: 0 }
+                ]
+            },
+            {
+                title: "咏鹅",
+                author: "[唐] 骆宾王",
+                fullText: "鹅，鹅，鹅，曲项向天歌。白毛浮绿水，红掌拨清波。",
+                questions: [
+                    { type: 'choice', text: "白毛浮绿水，红掌拨清____。", options: ["波", "河", "流", "水"], answer: 0 },
+                    { type: 'fill', text: "鹅，鹅，鹅，曲项向天_{1}。", answer: "歌" }
+                ]
+            },
+            {
+                title: "清明",
+                author: "[唐] 杜牧",
+                fullText: "清明时节雨纷纷，路上行人欲断魂。借问酒家何处有，牧童遥指杏花村。",
+                questions: [
+                    { type: 'fill', text: "清明时节雨纷纷，路上行人欲断_{1}。", answer: "魂" },
+                    { type: 'choice', text: "借问酒家何处有，牧童遥指____村。", options: ["杏花", "桃花", "梨花", "桂花"], answer: 0 }
+                ]
+            },
+            {
+                title: "九月九日忆山东兄弟",
+                author: "[唐] 王维",
+                fullText: "独在异乡为异客，每逢佳节倍思亲。遥知兄弟登高处，遍插茱萸少一人。",
+                questions: [
+                    { type: 'choice', text: "独在异乡为异客，每逢佳节倍思____。", options: ["亲", "人", "友", "乡"], answer: 0 },
+                    { type: 'fill', text: "遥知兄弟登高处，遍插茱萸少一_{1}。", answer: "人" }
+                ]
+            },
+            {
+                title: "赋得古原草送别",
+                author: "[唐] 白居易",
+                fullText: "离离原上草，一岁一枯荣。野火烧不尽，春风吹又生。",
+                questions: [
+                    { type: 'fill', text: "野火烧不尽，春风吹又_{1}。", answer: "生" },
+                    { type: 'choice', text: "离离原上草，一岁一枯____。", options: ["荣", "黄", "长", "衰"], answer: 0 }
+                ]
+            },
+            {
+                title: "望庐山瀑布",
+                author: "[唐] 李白",
+                fullText: "日照香炉生紫烟，遥看瀑布挂前川。飞流直下三千尺，疑是银河落九天。",
+                questions: [
+                    { type: 'choice', text: "飞流直下三千尺，疑是银河落____。", options: ["九天", "半天", "云间", "天上"], answer: 0 },
+                    { type: 'fill', text: "日照香炉生紫烟，遥看瀑布挂前_{1}。", answer: "川" }
+                ]
+            },
+            {
+                title: "江雪",
+                author: "[唐] 柳宗元",
+                fullText: "千山鸟飞绝，万径人踪灭。孤舟蓑笠翁，独钓寒江雪。",
+                questions: [
+                    { type: 'fill', text: "千山鸟飞绝，万径人踪_{1}。", answer: "灭" },
+                    { type: 'choice', text: "孤舟蓑笠翁，独钓寒江____。", options: ["雪", "月", "秋", "水"], answer: 0 }
+                ]
+            },
+            {
+                title: "悯农 (其二)",
+                author: "[唐] 李绅",
+                fullText: "锄禾日当午，汗滴禾下土。谁知盘中餐，粒粒皆辛苦。",
+                questions: [
+                    { type: 'choice', text: "谁知盘中餐，粒粒皆____。", options: ["辛苦", "心酸", "汗水", "不易"], answer: 0 },
+                    { type: 'fill', text: "锄禾日当午，汗滴禾下_{1}。", answer: "土" }
+                ]
+            }
+        ];
+
+        // Ensure database stays preserved inside LocalStorage
+        let poemsData = JSON.parse(localStorage.getItem('poetryGameDB_v2'));
+        if (!poemsData) {
+            poemsData = [...defaultPoems];
+            localStorage.setItem('poetryGameDB_v2', JSON.stringify(poemsData));
+        }
+
+        // --- App State variables ---
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let totalQuestions = 10;
+        let currentCorrectAnswer = "";
+        let currentPoemToRead = null;
+        let isLooping = false;
+        let lastPracticeIndices = ""; // Record of last practice selection to avoid repeats
+
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('start-screen');
+        const learningScreen = document.getElementById('learning-screen');
+        const practiceScreen = document.getElementById('practice-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const quizIndicators = document.getElementById('quiz-indicators');
+
+        const enterLearnBtn = document.getElementById('enter-learn-btn');
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const backFromLearnBtn = document.getElementById('back-from-learn-btn');
+        const backFromResultBtn = document.getElementById('back-from-result-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBlankBtn = document.getElementById('submit-blank-btn');
+
+        // Custom Modal elements
+        const customAlert = document.getElementById('custom-alert');
+        const alertTitle = document.getElementById('alert-title');
+        const alertMessage = document.getElementById('alert-message');
+        const alertOkBtn = document.getElementById('alert-ok-btn');
+
+        // Learn elements
+        const datalistEl = document.getElementById('poem-list');
+        const poemInputEl = document.getElementById('poem-input');
+        const searchPoemBtn = document.getElementById('search-poem-btn');
+        const addPoemPanel = document.getElementById('add-poem-panel');
+        const newPoemTitle = document.getElementById('new-poem-title');
+        const newPoemAuthor = document.getElementById('new-poem-author');
+        const newPoemContent = document.getElementById('new-poem-content');
+        const cancelAddBtn = document.getElementById('cancel-add-btn');
+        const saveNewPoemBtn = document.getElementById('save-new-poem-btn');
+
+        const learningContentEl = document.getElementById('learning-content');
+        const learnTitleEl = document.getElementById('learn-title');
+        const learnAuthorEl = document.getElementById('learn-author');
+        const learnTextEl = document.getElementById('learn-text');
+
+        const readAloudBtn = document.getElementById('read-aloud-btn');
+        const loopReadBtn = document.getElementById('loop-read-btn');
+        const stopReadBtn = document.getElementById('stop-read-btn');
+        const goPracticeBtn = document.getElementById('go-practice-btn');
+
+        // Practice elements
+        const practiceTitleEl = document.getElementById('practice-title');
+        const practiceAuthorEl = document.getElementById('practice-author');
+        const practiceBodyEl = document.getElementById('practice-body');
+        const practiceFeedbackEl = document.getElementById('practice-feedback');
+        const showOriginalBtn = document.getElementById('show-original-btn');
+        const retryPracticeBtn = document.getElementById('retry-practice-btn');
+        const backToLearnFromPracticeBtn = document.getElementById('back-to-learn-from-practice-btn');
+
+        // Quiz elements
+        const questionNumberEl = document.getElementById('question-number');
+        const scoreDisplayEl = document.getElementById('score-display');
+        const progressBarInner = document.getElementById('progress-bar');
+        const poemTitleEl = document.getElementById('poem-title');
+        const poemAuthorEl = document.getElementById('poem-author');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const fillBlankContainer = document.getElementById('fill-blank-container');
+        const inputsWrapper = document.getElementById('inputs-wrapper');
+        const feedbackArea = document.getElementById('feedback-area');
+        const finalScoreEl = document.getElementById('final-score');
+        const resultMessageEl = document.getElementById('result-message');
+
+
+        // --- Beautiful custom alert instead of native alert() ---
+        function showCustomAlert(title, message) {
+            alertTitle.textContent = title;
+            alertMessage.textContent = message;
+            customAlert.classList.remove('hidden');
+            setTimeout(() => {
+                customAlert.classList.remove('opacity-0');
+                customAlert.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeCustomAlert() {
+            customAlert.classList.add('opacity-0');
+            customAlert.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                customAlert.classList.add('hidden');
+            }, 300);
+        }
+
+        alertOkBtn.addEventListener('click', closeCustomAlert);
+
+        // --- STREAMING_CHUNK: DB initialization and updating dropdown lists ---
+        function initApp() {
+            updateDatalist();
+        }
+
+        function updateDatalist() {
+            datalistEl.innerHTML = '';
+            poemsData.forEach(poem => {
+                const option = document.createElement('option');
+                const cleanAuthor = poem.author.replace(/\[.*?\]\s*/, '');
+                option.value = `${poem.title} - ${cleanAuthor}`;
+                datalistEl.appendChild(option);
+            });
+        }
+
+        function showStartScreen() {
+            stopAudio();
+            startScreen.classList.remove('hidden');
+            learningScreen.classList.add('hidden');
+            practiceScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizIndicators.classList.add('hidden');
+        }
+
+        // --- STREAMING_CHUNK: Web Speech Synth audio controls ---
+        function stopAudio() {
+            isLooping = false;
+            window.speechSynthesis.cancel();
+            readAloudBtn.classList.remove('hidden');
+            loopReadBtn.classList.remove('hidden');
+            stopReadBtn.classList.add('hidden');
+        }
+
+        // --- STREAMING_CHUNK: Learning screen flow ---
+        function showLearningScreen() {
+            startScreen.classList.add('hidden');
+            learningScreen.classList.remove('hidden');
+            practiceScreen.classList.add('hidden');
+            poemInputEl.value = '';
+            addPoemPanel.classList.add('hidden');
+            learningContentEl.classList.add('hidden');
+            readAloudBtn.classList.add('hidden');
+            loopReadBtn.classList.add('hidden');
+            stopReadBtn.classList.add('hidden');
+            goPracticeBtn.classList.add('hidden');
+            stopAudio();
+        }
+
+        function handleSearchPoem() {
+            const query = poemInputEl.value.trim();
+            if (!query) return;
+
+            stopAudio();
+
+            let foundPoem = null;
+            const matchedOption = Array.from(datalistEl.options).find(opt => opt.value === query);
+            
+            if (matchedOption) {
+                const title = query.split(' - ')[0];
+                foundPoem = poemsData.find(p => p.title === title);
+            } else {
+                foundPoem = poemsData.find(p => 
+                    p.title.includes(query) || 
+                    p.author.replace(/\[.*?\]\s*/, '').includes(query)
+                );
+            }
+
+            if (foundPoem) {
+                addPoemPanel.classList.add('hidden');
+                displayLearningPoem(foundPoem);
+            } else {
+                addPoemPanel.classList.remove('hidden');
+                newPoemTitle.value = query.includes(' - ') ? query.split(' - ')[0] : query;
+                newPoemAuthor.value = query.includes(' - ') ? query.split(' - ')[1] : '';
+                newPoemContent.value = '';
+                learningContentEl.classList.add('hidden');
+                readAloudBtn.classList.add('hidden');
+                loopReadBtn.classList.add('hidden');
+                goPracticeBtn.classList.add('hidden');
+            }
+        }
+
+        cancelAddBtn.addEventListener('click', () => {
+            addPoemPanel.classList.add('hidden');
+        });
+
+        saveNewPoemBtn.addEventListener('click', () => {
+            const title = newPoemTitle.value.trim();
+            const author = newPoemAuthor.value.trim() || "未知";
+            const content = newPoemContent.value.trim();
+
+            if (!title || !content) {
+                showCustomAlert("信息缺失", "请确保填写了古诗的标题与诗文内容！");
+                return;
+            }
+
+            // Create questions dynamically for the new poem
+            const cleanContent = content.replace(/[，。！？、；]/g, ' ');
+            const words = cleanContent.split(/\s+/).filter(Boolean);
+            const questions = [];
+
+            if (words.length > 0) {
+                const randomWord = words[Math.floor(Math.random() * words.length)];
+                if (randomWord.length > 0) {
+                    const charToBlank = randomWord[Math.floor(Math.random() * randomWord.length)];
+                    questions.push({
+                        type: 'fill',
+                        text: content.replace(charToBlank, `_{1}`),
+                        answer: charToBlank
+                    });
+                }
+            }
+
+            const newPoem = {
+                title: title,
+                author: author.startsWith('[') ? author : `[未知] ${author}`,
+                fullText: content,
+                questions: questions.length > 0 ? questions : [{ type: 'choice', text: content.slice(0, 4) + "____。", options: [content.slice(4, 6), "看看", "想象", "发现"], answer: 0 }]
+            };
+
+            poemsData.push(newPoem);
+            localStorage.setItem('poetryGameDB_v2', JSON.stringify(poemsData));
+            updateDatalist();
+            addPoemPanel.classList.add('hidden');
+            
+            showCustomAlert("录入成功", `《${title}》已成功存入您的本地浏览器数据库中！`);
+            displayLearningPoem(newPoem);
+        });
+
+        function displayLearningPoem(poem) {
+            currentPoemToRead = poem;
+            learnTitleEl.textContent = poem.title;
+            learnAuthorEl.textContent = poem.author;
+            learnTextEl.innerHTML = '';
+
+            const sentences = poem.fullText.match(/[^，。！？、；]+[，。！？、；]/g) || [poem.fullText];
+            sentences.forEach(sentence => {
+                const p = document.createElement('p');
+                p.textContent = sentence;
+                learnTextEl.appendChild(p);
+            });
+
+            learningContentEl.classList.remove('hidden');
+            readAloudBtn.classList.remove('hidden');
+            loopReadBtn.classList.remove('hidden');
+            goPracticeBtn.classList.remove('hidden');
+        }
+
+        // --- STREAMING_CHUNK: Playing Text-to-Speech ---
+        function playSpeech(loop = false) {
+            if (!('speechSynthesis' in window)) {
+                showCustomAlert("不支持朗读", "您的浏览器不支持语音朗读功能，推荐使用 Chrome 或 Edge 浏览器。");
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            isLooping = loop;
+
+            if (!currentPoemToRead) return;
+
+            const baseText = `${currentPoemToRead.title}。${currentPoemToRead.author}。${currentPoemToRead.fullText}`;
+            // Add space between characters to achieve a beautiful single-character pacing effect
+            const formattedText = baseText.split('').join(' ');
+
+            const utterance = new SpeechSynthesisUtterance(formattedText);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.55; 
+            utterance.pitch = 1.0;
+
+            utterance.onstart = () => {
+                readAloudBtn.classList.add('hidden');
+                loopReadBtn.classList.add('hidden');
+                stopReadBtn.classList.remove('hidden');
+            };
+
+            utterance.onend = () => {
+                if (isLooping) {
+                    setTimeout(() => {
+                        if (isLooping) playSpeech(true);
+                    }, 1200);
+                } else {
+                    stopAudio();
+                }
+            };
+
+            utterance.onerror = () => {
+                stopAudio();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        readAloudBtn.addEventListener('click', () => playSpeech(false));
+        loopReadBtn.addEventListener('click', () => playSpeech(true));
+        stopReadBtn.addEventListener('click', stopAudio);
+
+
+        // --- STREAMING_CHUNK: Smart Fill Blanks generation (No overlapping, 5 tiers) ---
+        function generatePracticeView() {
+            let inputCount = 0;
+            
+            practiceTitleEl.textContent = currentPoemToRead.title;
+            practiceAuthorEl.textContent = currentPoemToRead.author;
+
+            let fullText = currentPoemToRead.fullText;
+            let charList = []; // stores { char, isPunctuation }
+            let pureCharIndices = []; // indices of text characters
+            let clauses = []; // array of pure indices per sentence
+
+            let currentClause = [];
+            for (let i = 0; i < fullText.length; i++) {
+                let c = fullText[i];
+                if (/[，。！？、；]/.test(c)) {
+                    charList.push({ char: c, isPunctuation: true });
+                    if (currentClause.length > 0) {
+                        clauses.push(currentClause);
+                        currentClause = [];
+                    }
+                } else {
+                    charList.push({ char: c, isPunctuation: false });
+                    pureCharIndices.push(charList.length - 1);
+                    currentClause.push(charList.length - 1);
+                }
+            }
+            if (currentClause.length > 0) clauses.push(currentClause);
+
+            let selectedIndices = new Set();
+            let attempts = 0;
+            let selectedIndicesStr = "";
+
+            // Loop to guarantee new blank configurations compared to previous practice
+            while (attempts < 10) {
+                selectedIndices = new Set();
+                
+                // 1. Full clause blank out
+                let validClauses = clauses.filter(c => c.length > 0);
+                if (validClauses.length > 0) {
+                    let fullClause = validClauses[Math.floor(Math.random() * validClauses.length)];
+                    fullClause.forEach(idx => selectedIndices.add(idx));
+                }
+
+                // 2. Sequential blanks for lengths of [4, 3, 2, 1]
+                let targets = [4, 3, 2, 1];
+                targets.forEach(len => {
+                    let possibleBlocks = [];
+                    for (let i = 0; i < clauses.length; i++) {
+                        let clause = clauses[i];
+                        for (let j = 0; j <= clause.length - len; j++) {
+                            let block = clause.slice(j, j + len);
+                            let isFree = block.every(idx => !selectedIndices.has(idx));
+                            if (isFree) {
+                                possibleBlocks.push(block);
+                            }
+                        }
+                    }
+                    if (possibleBlocks.length > 0) {
+                        let chosenBlock = possibleBlocks[Math.floor(Math.random() * possibleBlocks.length)];
+                        chosenBlock.forEach(idx => selectedIndices.add(idx));
+                    }
+                });
+
+                selectedIndicesStr = Array.from(selectedIndices).sort((a,b)=>a-b).join(',');
+                if (selectedIndicesStr !== lastPracticeIndices) {
+                    break;
+                }
+                attempts++;
+            }
+
+            lastPracticeIndices = selectedIndicesStr; // Preserve configuration string
+
+            // Render view HTML
+            let newTextHtml = "<p>";
+            for (let i = 0; i < charList.length; i++) {
+                let item = charList[i];
+                if (item.isPunctuation) {
+                    newTextHtml += item.char;
+                    if (/[。！？]/.test(item.char)) {
+                        newTextHtml += "</p><p>";
+                    }
+                } else {
+                    if (selectedIndices.has(i)) {
+                        newTextHtml += `<input type="text" class="blank-input practice-input mx-1 text-center" data-p-index="${inputCount}" data-char="${item.char}" />`;
+                        inputCount++;
+                    } else {
+                        newTextHtml += item.char;
+                    }
+                }
+            }
+            
+            newTextHtml = newTextHtml.replace(/<p><\/p>/g, '');
+            practiceBodyEl.innerHTML = newTextHtml;
+
+            // Clear feedback container
+            practiceFeedbackEl.classList.add('hidden');
+            practiceFeedbackEl.className = "hidden text-center py-3 px-6 rounded-xl font-bold mb-6";
+
+            // Add auto-jumping and Chinese IME listener
+            const inputs = Array.from(document.querySelectorAll('.practice-input'));
+            inputs.forEach((input, index) => {
+                input.isComposing = false;
+
+                input.addEventListener('compositionstart', function() {
+                    this.isComposing = true;
+                });
+                
+                input.addEventListener('compositionend', function() {
+                    this.isComposing = false;
+                    if (this.value.length > 0) {
+                        this.value = this.value.charAt(0);
+                    }
+                    handleJump(this, index);
+                });
+
+                input.addEventListener('input', function() {
+                    if (this.isComposing) return;
+                    if (this.value.length > 0) {
+                        this.value = this.value.charAt(0);
+                        handleJump(this, index);
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '') {
+                        if (index > 0) {
+                            inputs[index - 1].focus();
+                        }
+                    }
+                });
+            });
+
+            function handleJump(currentInput, index) {
+                checkPracticeCompletion();
+                if (currentInput.value.length > 0) {
+                    if (index + 1 < inputs.length) {
+                        inputs[index + 1].focus();
+                    }
+                }
+            }
+            
+            if (inputs.length > 0) inputs[0].focus();
+        }
+
+        // --- STREAMING_CHUNK: Scoring and Checking practice answers ---
+        function checkPracticeCompletion() {
+            const inputs = Array.from(document.querySelectorAll('.practice-input'));
+            const allFilled = inputs.every(input => input.value.trim() !== "");
+            
+            if (!allFilled) {
+                practiceFeedbackEl.classList.add('hidden');
+                return;
+            }
+
+            const allCorrect = inputs.every(input => input.value.trim() === input.dataset.char);
+            
+            practiceFeedbackEl.classList.remove('hidden');
+            if (allCorrect) {
+                practiceFeedbackEl.className = "text-center py-3 px-6 rounded-xl font-bold mb-6 bg-green-100 text-green-800 border border-green-300 correct-animation";
+                practiceFeedbackEl.textContent = "✨ 妙极了！一字不差，完全正确！";
+            } else {
+                practiceFeedbackEl.className = "text-center py-3 px-6 rounded-xl font-bold mb-6 bg-red-100 text-red-800 border border-red-300 wrong-animation";
+                practiceFeedbackEl.textContent = "❌ 有些字填错了，请仔细检查修改。也可以点击下方“查看原文”哦！";
+            }
+        }
+
+        goPracticeBtn.addEventListener('click', () => {
+            stopAudio();
+            learningScreen.classList.add('hidden');
+            practiceScreen.classList.remove('hidden');
+            generatePracticeView();
+        });
+
+        retryPracticeBtn.addEventListener('click', () => {
+            generatePracticeView();
+        });
+
+        showOriginalBtn.addEventListener('click', () => {
+            const inputs = document.querySelectorAll('.practice-input');
+            inputs.forEach(input => {
+                input.value = input.dataset.char;
+            });
+            checkPracticeCompletion();
+        });
+
+        backToLearnFromPracticeBtn.addEventListener('click', () => {
+            practiceScreen.classList.add('hidden');
+            learningScreen.classList.remove('hidden');
+            displayLearningPoem(currentPoemToRead);
+        });
+
+
+        // --- STREAMING_CHUNK: Quiz System implementation ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            updateScore();
+            
+            currentQuestions = [];
+            let shuffledPoems = shuffleArray([...poemsData]);
+            
+            for(let i=0; i < Math.min(totalQuestions, shuffledPoems.length); i++) {
+                let poem = shuffledPoems[i];
+                if (poem.questions && poem.questions.length > 0) {
+                    let randomQuestion = poem.questions[Math.floor(Math.random() * poem.questions.length)];
+                    currentQuestions.push({
+                        poemTitle: poem.title,
+                        poemAuthor: poem.author,
+                        ...randomQuestion
+                    });
+                }
+            }
+            totalQuestions = currentQuestions.length; 
+            
+            if (totalQuestions === 0) {
+                showCustomAlert("题库未准备就绪", "请先在学习模式中选择或录入一些诗词再开始测试！");
+                return;
+            }
+
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizIndicators.classList.remove('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = currentQuestions[currentQuestionIndex];
+            
+            questionNumberEl.textContent = currentQuestionIndex + 1;
+            progressBarInner.style.width = `${((currentQuestionIndex) / totalQuestions) * 100}%`;
+            
+            feedbackArea.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            optionsContainer.classList.add('hidden');
+            fillBlankContainer.classList.add('hidden');
+            optionsContainer.innerHTML = '';
+            inputsWrapper.innerHTML = '';
+            submitBlankBtn.disabled = false;
+            submitBlankBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            poemTitleEl.textContent = q.poemTitle;
+            poemAuthorEl.textContent = q.poemAuthor;
+
+            if (q.type === 'choice') {
+                setupChoiceQuestion(q);
+            } else if (q.type === 'fill') {
+                setupFillQuestion(q);
+            }
+        }
+
+        function setupChoiceQuestion(q) {
+            questionTextEl.innerHTML = q.text.replace('____', '<span class="text-amber-700 font-bold border-b-3 border-amber-600 px-4">____</span>');
+            optionsContainer.classList.remove('hidden');
+            
+            currentCorrectAnswer = q.answer;
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn bg-white border-2 border-amber-100 text-gray-800 text-lg font-medium py-3 px-6 rounded-2xl hover:bg-amber-50 hover:border-amber-300 focus:outline-none focus:ring-4 focus:ring-amber-200/50 shadow-sm';
+                btn.textContent = opt;
+                btn.onclick = () => handleChoice(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function setupFillQuestion(q) {
+            let parts = q.text.split(/_\{(\d+)\}/g);
+            let htmlText = "";
+            
+            currentCorrectAnswer = q.answer;
+
+            for (let i = 0; i < parts.length; i++) {
+                if (i % 2 === 0) {
+                    htmlText += parts[i];
+                } else {
+                    let length = parseInt(parts[i]);
+                    for(let j=0; j<length; j++){
+                        htmlText += `<span class="inline-block w-8 border-b-3 border-amber-600 mx-1"></span>`;
+                    }
+                }
+            }
+            questionTextEl.innerHTML = htmlText;
+            fillBlankContainer.classList.remove('hidden');
+            
+            for(let i=0; i<q.answer.length; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'blank-input mx-1';
+                input.dataset.index = i;
+                input.isComposing = false;
+
+                // Bind IME control events to Test inputs as well
+                input.addEventListener('compositionstart', function() {
+                    this.isComposing = true;
+                });
+                
+                input.addEventListener('compositionend', function() {
+                    this.isComposing = false;
+                    if (this.value.length > 0) {
+                        this.value = this.value.charAt(0);
+                    }
+                    handleQuizJump(this, i);
+                });
+
+                input.addEventListener('input', function() {
+                    if (this.isComposing) return;
+                    if (this.value.length > 0) {
+                        this.value = this.value.charAt(0);
+                        handleQuizJump(this, i);
+                    }
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '') {
+                        let prevInput = document.querySelector(`#fill-blank-container .blank-input[data-index="${i - 1}"]`);
+                        if (prevInput) prevInput.focus();
+                    }
+                    if (e.key === 'Enter') {
+                        submitBlankBtn.click();
+                    }
+                });
+
+                inputsWrapper.appendChild(input);
+            }
+
+            function handleQuizJump(currentInput, index) {
+                if (currentInput.value.length > 0) {
+                    let nextInput = document.querySelector(`#fill-blank-container .blank-input[data-index="${index + 1}"]`);
+                    if (nextInput) nextInput.focus();
+                }
+            }
+            
+            setTimeout(() => {
+                const firstInput = document.querySelector('#fill-blank-container .blank-input');
+                if(firstInput) firstInput.focus();
+            }, 100);
+        }
+
+        function handleChoice(selectedIndex, buttonEl) {
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('cursor-not-allowed', 'opacity-80');
+            });
+
+            const isCorrect = selectedIndex === currentCorrectAnswer;
+            
+            if (isCorrect) {
+                buttonEl.classList.remove('border-amber-100', 'hover:bg-amber-50');
+                buttonEl.classList.add('bg-green-50', 'border-green-500', 'text-green-800', 'correct-animation');
+                score += 10;
+                updateScore();
+                showFeedback(true, "🌟 回答正确！");
+            } else {
+                buttonEl.classList.remove('border-amber-100', 'hover:bg-amber-50');
+                buttonEl.classList.add('bg-red-50', 'border-red-500', 'text-red-800', 'wrong-animation');
+                
+                const correctBtn = buttons[currentCorrectAnswer];
+                correctBtn.classList.remove('border-amber-100');
+                correctBtn.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                
+                const q = currentQuestions[currentQuestionIndex];
+                showFeedback(false, `正确答案是：${q.options[currentCorrectAnswer]}`);
+            }
+
+            nextBtn.classList.remove('hidden');
+        }
+
+        function handleBlankSubmit() {
+            const inputs = document.querySelectorAll('#fill-blank-container .blank-input');
+            let userAnswer = "";
+            inputs.forEach(input => {
+                userAnswer += input.value.trim();
+                input.disabled = true;
+            });
+
+            submitBlankBtn.disabled = true;
+            submitBlankBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const isCorrect = userAnswer === currentCorrectAnswer;
+
+            if (isCorrect) {
+                score += 10;
+                updateScore();
+                inputsWrapper.classList.add('correct-animation');
+                showFeedback(true, "🎉 妙笔生花，完全正确！");
+            } else {
+                inputsWrapper.classList.add('wrong-animation');
+                showFeedback(false, `正确答案应为：<span class="font-bold text-green-700 underline">${currentCorrectAnswer}</span>`);
+            }
+
+            nextBtn.classList.remove('hidden');
+        }
+
+        function showFeedback(isCorrect, message) {
+            feedbackArea.classList.remove('hidden', 'bg-green-50', 'text-green-800', 'bg-red-50', 'text-red-800');
+            if (isCorrect) {
+                feedbackArea.classList.add('bg-green-50', 'text-green-800', 'border', 'border-green-200');
+            } else {
+                feedbackArea.classList.add('bg-red-50', 'text-red-800', 'border', 'border-red-200');
+            }
+            feedbackArea.innerHTML = message;
+        }
+
+        function updateScore() {
+            scoreDisplayEl.textContent = score;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuestions) {
+                loadQuestion();
+            } else {
+                endQuiz();
+            }
+        }
+
+        function endQuiz() {
+            gameScreen.classList.add('hidden');
+            quizIndicators.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            progressBarInner.style.width = '100%';
+            finalScoreEl.textContent = score;
+            
+            let message = "";
+            let percentage = score / (totalQuestions * 10);
+            
+            if (percentage === 1) {
+                message = "🏆 满腹经纶！你是真正的诗词圣手！";
+            } else if (percentage >= 0.8) {
+                message = "✨ 极为精彩！笔下生风，掌握得很棒！";
+            } else if (percentage >= 0.6) {
+                message = "🎈 通过测试！温故而知新，多加复习可以做得更好。";
+            } else {
+                message = "✍️ 熟读唐诗三百首，不会作诗也会吟。先去学习模式听听朗读、练习一下吧！";
+            }
+            
+            resultMessageEl.textContent = message;
+        }
+
+
+        // --- Event Listeners Mapping ---
+        enterLearnBtn.addEventListener('click', showLearningScreen);
+        startQuizBtn.addEventListener('click', initQuiz);
+        backFromLearnBtn.addEventListener('click', showStartScreen);
+        backFromResultBtn.addEventListener('click', showStartScreen);
+        restartBtn.addEventListener('click', initQuiz);
+        
+        searchPoemBtn.addEventListener('click', handleSearchPoem);
+        poemInputEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSearchPoem();
+        });
+        
+        nextBtn.addEventListener('click', nextQuestion);
+        submitBlankBtn.addEventListener('click', handleBlankSubmit);
+
+        // Run application setup
+        initApp();
+
+    </script>
+</body>
+</html>
